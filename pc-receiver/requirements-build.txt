@@ -1,0 +1,7 @@
+# Windows 8.1 64-bit için Python 3.12 ile kullanılan sabit derleme araçları.
+PyInstaller==6.11.1
+qrcode==7.4.2
+Pillow==10.4.0
+pystray==0.19.5
+certifi==2026.6.17
+ably==2.1.4

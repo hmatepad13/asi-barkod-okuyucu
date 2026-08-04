@@ -1,0 +1,25 @@
+{
+  "name": "Aşı Barkod PWA",
+  "short_name": "Aşı Barkod PWA",
+  "description": "Android ve iPhone için Ably üzerinden çalışan GS1 DataMatrix ve QR okuyucu",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080a0d",
+  "theme_color": "#080a0d",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

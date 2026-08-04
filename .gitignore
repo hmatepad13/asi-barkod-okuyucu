@@ -1,0 +1,14 @@
+**/build/
+**/dist/
+**/__pycache__/
+**/*.pyc
+**/logs/
+*.spec
+*.zip
+*.exe
+*.apk
+.gradle/
+local.properties
+build-tools/
+.tmp/
+**/node_modules/
