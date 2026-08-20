@@ -1,5 +1,12 @@
 # Sürüm Notları
 
+## PWA 2026.08.20.1 - 20 Ağustos 2026
+
+- WhatsApp'tan gelen QR ekran görüntüleri için `FOTOĞRAFTAN QR` seçeneği eklendi.
+- Seçilen PNG/JPG/WebP ekran görüntüsündeki QR kod mevcut seçili PC'ye, normal
+  kamera okumasıyla aynı Ably teslim-onay sürecinden geçirilerek gönderilir.
+- Kamera ile DataMatrix/QR okuma, PC bulma ve mevcut gönderim akışı değiştirilmedi.
+
 ## v0.5.0 - 5 Ağustos 2026
 
 - PC alıcısı yalnız Ably ile çalışacak şekilde sadeleştirildi; eski yerel HTTP,

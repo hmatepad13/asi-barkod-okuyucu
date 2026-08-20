@@ -217,6 +217,30 @@ h1 {
   object-fit: cover;
 }
 
+.photo-input {
+  display: none;
+}
+
+.photo-qr-button {
+  position: absolute;
+  z-index: 5;
+  top: 10px;
+  left: 10px;
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  background: rgba(15, 22, 32, 0.88);
+  color: #f7f9fb;
+  font-size: 0.61rem;
+  font-weight: 950;
+  letter-spacing: 0.03em;
+}
+
+.photo-qr-button:active {
+  scale: 0.97;
+}
+
 .camera-placeholder {
   position: absolute;
   inset: 0;

@@ -135,9 +135,41 @@ function captureRegion(
   return context.getImageData(0, 0, canvas.width, canvas.height);
 }
 
+async function imageDataFromFile(file: File) {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = objectUrl;
+    await image.decode();
+    if (!image.naturalWidth || !image.naturalHeight) {
+      throw new Error("Seçilen fotoğraf açılamadı.");
+    }
+    // Ekran görüntülerinin çözünürlüğü zaten yeterli; aşırı büyük fotoğrafları
+    // tarayıcıyı yormadan QR modüllerini koruyacak boyuta indiriyoruz.
+    const scale = Math.min(1, 2048 / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d", {
+      alpha: false,
+      willReadFrequently: true,
+    });
+    if (!context) throw new Error("Fotoğraf işleme alanı açılamadı.");
+    context.drawImage(image, 0, 0, width, height);
+    return context.getImageData(0, 0, width, height);
+  } catch {
+    throw new Error("Fotoğraf okunamadı. WhatsApp ekran görüntüsünü PNG veya JPG olarak seçin.");
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export default function Home() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scanTargetRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanningRef = useRef(false);
   const searchingPcRef = useRef(false);
@@ -665,6 +697,55 @@ export default function Home() {
     }
   };
 
+  const scanPhoto = async (file: File) => {
+    if (scanningRef.current || !selectedReceiver) return;
+    scanningRef.current = true;
+    setScanning(true);
+    setLastRead("");
+    setLastRaw("");
+    setCameraError("");
+    setStatus("Fotoğraftaki QR kod aranıyor");
+
+    try {
+      const imageData = await imageDataFromFile(file);
+      const results = await readBarcodes(imageData, {
+        formats: ["QRCode"],
+        maxNumberOfSymbols: 4,
+        tryHarder: true,
+        tryRotate: true,
+        tryInvert: true,
+        tryDownscale: true,
+        tryDenoise: true,
+        textMode: "Plain",
+      });
+      const found = results.find((result) => result.isValid && result.bytes.length);
+      if (!found) {
+        throw new Error("QR kod bulunamadı. WhatsApp ekran görüntüsünde kodun tamamı görünmelidir.");
+      }
+
+      const raw = bytesToRaw(found);
+      const vaccineName = vaccineNameForBarcode(raw);
+      setStatus(`${selectedReceiver.name} bilgisayarına gönderiliyor`);
+      await sendToPc(raw, "QR_CODE");
+      setLastRead(vaccineName || "QR kod okundu");
+      setLastRaw(printableBarcode(raw));
+      setStatus(`Başarılı — ${selectedReceiver.name} bilgisayarına Ably üzerinden yazıldı`);
+      navigator.vibrate?.(80);
+      beep();
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      setStatus("Fotoğraftaki QR kod okunamadı");
+      setCameraError(reason);
+    } finally {
+      setScanning(false);
+      scanningRef.current = false;
+      if (pendingPwaReloadRef.current && !document.hidden) {
+        pendingPwaReloadRef.current = false;
+        reloadForPwaUpdate();
+      }
+    }
+  };
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -723,6 +804,25 @@ export default function Home() {
             </div>
           )}
         </div>
+        <input
+          ref={photoInputRef}
+          className="photo-input"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0];
+            event.currentTarget.value = "";
+            if (file) void scanPhoto(file);
+          }}
+        />
+        <button
+          type="button"
+          className="photo-qr-button"
+          onClick={() => photoInputRef.current?.click()}
+          disabled={scanning || !selectedReceiver}
+        >
+          FOTOĞRAFTAN QR
+        </button>
         <div className="controls" aria-label="Kamera kontrolleri">
           <div className="secondary-controls">
             <button
