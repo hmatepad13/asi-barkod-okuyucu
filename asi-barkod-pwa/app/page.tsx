@@ -46,6 +46,7 @@ const WORKSPACE_ID = "4232a7f478a64df09506dc7919c1821b";
 const CHANNEL_PREFIX = `asi-barkod:${WORKSPACE_ID}`;
 const DISCOVERY_WAIT_MS = 2800;
 const PWA_UPDATE_MIN_INTERVAL_MS = 30 * 60 * 1000;
+const PWA_SHORT_VERSION = `v${PWA_RELEASE.split(".").slice(-2).join(".")}`;
 
 type ScanFormat = "DATA_MATRIX" | "QR_CODE";
 
@@ -753,7 +754,10 @@ export default function Home() {
           <p className="eyebrow">TELEFON BARKOD OKUYUCU</p>
           <h1>Aşı Barkod PWA</h1>
         </div>
-        <span className="test-badge">ABLY BULUT</span>
+        <div className="header-meta">
+          <span className="test-badge">ABLY BULUT</span>
+          <small className="version-badge">{PWA_SHORT_VERSION}</small>
+        </div>
       </header>
 
       <section className="pc-panel">

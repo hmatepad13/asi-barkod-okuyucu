@@ -1,5 +1,9 @@
 # Sürüm Notları
 
+## PWA 2026.08.20.2 - 20 Ağustos 2026
+
+- Uygulama başlığına kısa sürüm etiketi eklendi (`v20.2`).
+
 ## PWA 2026.08.20.1 - 20 Ağustos 2026
 
 - WhatsApp'tan gelen QR ekran görüntüleri için `FOTOĞRAFTAN QR` seçeneği eklendi.

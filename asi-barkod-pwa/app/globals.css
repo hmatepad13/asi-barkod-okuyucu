@@ -96,6 +96,21 @@ h1 {
   letter-spacing: 0.04em;
 }
 
+.header-meta {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 4px;
+}
+
+.version-badge {
+  padding-right: 2px;
+  color: #7f8998;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
 .status-panel {
   display: flex;
   align-items: center;
