@@ -825,7 +825,13 @@ export default function Home() {
           onClick={() => photoInputRef.current?.click()}
           disabled={scanning || !selectedReceiver}
         >
-          FOTOĞRAFTAN QR
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8" cy="8" r="1.5" />
+            <path d="m5.5 18 4.1-4.2 2.8 2.6 2.3-2.3 3.3 3.1" />
+            <path d="M16 6h2v2h-2zM16 10h1v1h-1zM18 11h1v2h-1zM15 13h2v1h-2z" />
+          </svg>
+          <span>GALERİDEN QR</span>
         </button>
         <div className="controls" aria-label="Kamera kontrolleri">
           <div className="secondary-controls">

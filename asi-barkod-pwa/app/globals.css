@@ -241,15 +241,35 @@ h1 {
   z-index: 5;
   top: 10px;
   left: 10px;
-  min-height: 34px;
-  padding: 7px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 10px;
-  background: rgba(15, 22, 32, 0.88);
-  color: #f7f9fb;
-  font-size: 0.61rem;
+  display: inline-flex;
+  min-width: 156px;
+  min-height: 46px;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 13px;
+  border: 1px solid rgba(173, 234, 204, 0.64);
+  border-radius: 8px;
+  background: rgba(18, 35, 31, 0.94);
+  color: #f5fff9;
+  font-size: 0.7rem;
   font-weight: 950;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.045em;
+}
+
+.photo-qr-button svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: #62edaa;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.photo-qr-button svg path:last-child {
+  fill: #62edaa;
+  stroke: none;
 }
 
 .photo-qr-button:active {

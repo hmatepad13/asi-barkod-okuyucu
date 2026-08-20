@@ -1,5 +1,10 @@
 # Sürüm Notları
 
+## PWA 2026.08.20.3 - 20 Ağustos 2026
+
+- Fotoğraf seçme düğmesi, anlaşılır galeri/QR simgeli dikdörtgen `GALERİDEN QR`
+  düğmesi olarak yenilendi.
+
 ## PWA 2026.08.20.2 - 20 Ağustos 2026
 
 - Uygulama başlığına kısa sürüm etiketi eklendi (`v20.2`).
