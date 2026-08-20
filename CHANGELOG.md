@@ -1,5 +1,12 @@
 # Sürüm Notları
 
+## PWA 2026.08.20.4 - 20 Ağustos 2026
+
+- Fabrika baskısında ince dikey beyaz boşluklar bulunan DataMatrix kodları için
+  normal okuma başarısız olduğunda yarı ölçekli yeniden örnekleme eklendi.
+- Kurtarma yalnız ilk deneme başarısızsa çalışır; normal barkodların hızı ve
+  merkezdeki hedef dışındaki kodları reddetme davranışı korunur.
+
 ## PWA 2026.08.20.3 - 20 Ağustos 2026
 
 - Fotoğraf seçme düğmesi, anlaşılır galeri/QR simgeli dikdörtgen `GALERİDEN QR`

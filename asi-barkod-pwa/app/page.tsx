@@ -93,6 +93,7 @@ function captureRegion(
   video: HTMLVideoElement,
   target: HTMLElement,
   enhanced: boolean,
+  sourceScale?: number,
 ) {
   const videoRect = video.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
@@ -108,7 +109,7 @@ function captureRegion(
       height: targetRect.height,
     },
   );
-  const scale = Math.min(
+  const scale = sourceScale ?? Math.min(
     1600 / region.width,
     Math.max(1, 1200 / region.width),
   );
@@ -627,6 +628,28 @@ export default function Home() {
         imageData.width,
         imageData.height,
       );
+      if (!found) {
+        // İnce dikey baskı boşlukları uzaktan okunurken kameranın küçültme
+        // etkisiyle komşu siyah hücrelere karışır. Kaynak kamera karesini
+        // büyütmeden yarı ölçekte örnekleyerek aynı etkiyi yakından üretiriz.
+        setStatus("Baskı çizgili DataMatrix yeniden deneniyor");
+        const halfScaleImage = captureRegion(video, scanTarget, false, 0.5);
+        const halfScaleResults = await readBarcodes(halfScaleImage, {
+          formats: ["DataMatrix"],
+          maxNumberOfSymbols: 4,
+          tryHarder: true,
+          tryRotate: true,
+          tryInvert: true,
+          tryDownscale: true,
+          tryDenoise: true,
+          textMode: "Plain",
+        });
+        found = selectCenteredBarcode(
+          halfScaleResults,
+          halfScaleImage.width,
+          halfScaleImage.height,
+        );
+      }
       if (!found) {
         setStatus("Hasarlı barkod için en net kare seçiliyor");
         const rescueFrames = [imageData];
