@@ -1,5 +1,21 @@
 # Sürüm Notları
 
+## PWA 2026.08.20.6 - 20 Ağustos 2026
+
+- ZXing-WASM 3.1.3, Next.js 16.3.1, React 19.2.8 ve Ably 2.27.0 sürümlerine
+  yükseltildi; PWA'nın kendi barındırdığı ZXing WASM dosyası da aynı sürümle
+  eşlendi.
+- Normal, yarı ölçek, blur ve mavi kanal okumalarında tekrarlanan ZXing
+  seçenekleri tek bir okuyucu modülünde toplandı.
+- Gerçek ZXing motorunu çalıştıran GS1 DataMatrix ve dikey baskı boşluğu
+  regresyon testleri eklendi. Bozuk örnekte normal okumanın başarısız, yarı
+  ölçek kurtarmasının başarılı olduğu otomatik doğrulanıyor.
+- Artık kullanılmayan eski yerel ağ açıklaması kaldırıldı.
+- Kaynak koddaki eski `android-pwa` istemci adı kaldırıldı; kalıcı ad yalnız
+  `Aşı Barkod PWA` olarak bırakıldı.
+- Üretim ve geliştirme bağımlılıklarında bilinen `npm audit` kayıtları sıfıra
+  indirildi.
+
 ## PWA 2026.08.20.5 - 20 Ağustos 2026
 
 - Yarı ölçekli kurtarma da başarısız olursa çalışan, kamera çözünürlüğüne göre

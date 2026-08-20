@@ -4,9 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import * as Ably from "ably";
 import {
   prepareZXingModule,
-  readBarcodes,
   type ReadResult,
 } from "zxing-wasm/reader";
+import {
+  decodeCenteredBarcode,
+  decodeFirstBarcode,
+} from "./barcodeDecoder";
 import {
   mergeReceiver,
   receiverConnectionLabel,
@@ -14,7 +17,6 @@ import {
 } from "./receiverTransport";
 import {
   coverTargetSourceRect,
-  selectCenteredBarcode,
 } from "./scanTarget";
 import {
   edgeSharpnessScore,
@@ -41,7 +43,7 @@ type CameraSettingSet = MediaTrackSettings & {
 };
 
 const SAVED_CAMERA_KEY = "asi-pwa-camera-id";
-const ABLY_CLIENT_KEY = "asi-android-pwa-ably-client-id";
+const ABLY_CLIENT_KEY = "asi-barkod-pwa-ably-client-id";
 const WORKSPACE_ID = "4232a7f478a64df09506dc7919c1821b";
 const CHANNEL_PREFIX = `asi-barkod:${WORKSPACE_ID}`;
 const DISCOVERY_WAIT_MS = 2800;
@@ -92,7 +94,6 @@ function wait(milliseconds: number) {
 function captureRegion(
   video: HTMLVideoElement,
   target: HTMLElement,
-  enhanced: boolean,
   sourceScale?: number,
   blurRatio = 0,
 ) {
@@ -123,8 +124,7 @@ function captureRegion(
   });
   if (!context) throw new Error("Görüntü işleme alanı açılamadı.");
   context.imageSmoothingEnabled = false;
-  if (enhanced) context.filter = "grayscale(1) contrast(1.35)";
-  else if (blurRatio > 0) {
+  if (blurRatio > 0) {
     context.filter = `blur(${Math.max(1, canvas.width * blurRatio)}px)`;
   }
   context.drawImage(
@@ -616,43 +616,18 @@ export default function Home() {
       await new Promise<void>((resolve) =>
         window.requestAnimationFrame(() => resolve()),
       );
-      const imageData = captureRegion(video, scanTarget, false);
-      const results = await readBarcodes(imageData, {
-        formats: ["DataMatrix", "QRCode"],
-        maxNumberOfSymbols: 4,
-        tryHarder: true,
-        tryRotate: true,
-        tryInvert: true,
-        tryDownscale: true,
-        tryDenoise: true,
-        textMode: "Plain",
-      });
-      let found: ReadResult | undefined = selectCenteredBarcode(
-        results,
-        imageData.width,
-        imageData.height,
+      const imageData = captureRegion(video, scanTarget);
+      let found: ReadResult | undefined = await decodeCenteredBarcode(
+        imageData,
+        ["DataMatrix", "QRCode"],
       );
       if (!found) {
         // İnce dikey baskı boşlukları uzaktan okunurken kameranın küçültme
         // etkisiyle komşu siyah hücrelere karışır. Kaynak kamera karesini
         // büyütmeden yarı ölçekte örnekleyerek aynı etkiyi yakından üretiriz.
         setStatus("Baskı çizgili DataMatrix yeniden deneniyor");
-        const halfScaleImage = captureRegion(video, scanTarget, false, 0.5);
-        const halfScaleResults = await readBarcodes(halfScaleImage, {
-          formats: ["DataMatrix"],
-          maxNumberOfSymbols: 4,
-          tryHarder: true,
-          tryRotate: true,
-          tryInvert: true,
-          tryDownscale: true,
-          tryDenoise: true,
-          textMode: "Plain",
-        });
-        found = selectCenteredBarcode(
-          halfScaleResults,
-          halfScaleImage.width,
-          halfScaleImage.height,
-        );
+        const halfScaleImage = captureRegion(video, scanTarget, 0.5);
+        found = await decodeCenteredBarcode(halfScaleImage, ["DataMatrix"]);
       }
       if (!found) {
         // Yarı ölçek de yetmezse, gerçek bozuk baskı örneğinde doğrulanan
@@ -662,32 +637,17 @@ export default function Home() {
         const blurredImage = captureRegion(
           video,
           scanTarget,
-          false,
           undefined,
           2.2 / 310,
         );
-        const blurredResults = await readBarcodes(blurredImage, {
-          formats: ["DataMatrix"],
-          maxNumberOfSymbols: 4,
-          tryHarder: true,
-          tryRotate: true,
-          tryInvert: true,
-          tryDownscale: true,
-          tryDenoise: true,
-          textMode: "Plain",
-        });
-        found = selectCenteredBarcode(
-          blurredResults,
-          blurredImage.width,
-          blurredImage.height,
-        );
+        found = await decodeCenteredBarcode(blurredImage, ["DataMatrix"]);
       }
       if (!found) {
         setStatus("Hasarlı barkod için en net kare seçiliyor");
         const rescueFrames = [imageData];
         for (let frame = 0; frame < 2; frame += 1) {
           await wait(80);
-          rescueFrames.push(captureRegion(video, scanTarget, false));
+          rescueFrames.push(captureRegion(video, scanTarget));
         }
         const rescueFrame = rescueFrames.reduce((sharpest, candidate) =>
           edgeSharpnessScore(candidate.data, candidate.width, candidate.height) >
@@ -700,20 +660,9 @@ export default function Home() {
           rescueFrame.width,
           rescueFrame.height,
         );
-        const rescueResults = await readBarcodes(rescueImage, {
-          formats: ["DataMatrix", "QRCode"],
-          maxNumberOfSymbols: 4,
-          tryHarder: true,
-          tryRotate: true,
-          tryInvert: true,
-          tryDownscale: true,
-          tryDenoise: true,
-          textMode: "Plain",
-        });
-        found = selectCenteredBarcode(
-          rescueResults,
-          rescueImage.width,
-          rescueImage.height,
+        found = await decodeCenteredBarcode(
+          rescueImage,
+          ["DataMatrix", "QRCode"],
         );
       }
 
@@ -764,17 +713,7 @@ export default function Home() {
 
     try {
       const imageData = await imageDataFromFile(file);
-      const results = await readBarcodes(imageData, {
-        formats: ["QRCode"],
-        maxNumberOfSymbols: 4,
-        tryHarder: true,
-        tryRotate: true,
-        tryInvert: true,
-        tryDownscale: true,
-        tryDenoise: true,
-        textMode: "Plain",
-      });
-      const found = results.find((result) => result.isValid && result.bytes.length);
+      const found = await decodeFirstBarcode(imageData, ["QRCode"]);
       if (!found) {
         throw new Error("QR kod bulunamadı. WhatsApp ekran görüntüsünde kodun tamamı görünmelidir.");
       }
@@ -935,10 +874,6 @@ export default function Home() {
         {lastRaw && <code>{lastRaw}</code>}
         {cameraError && <span className="error-message">{cameraError}</span>}
       </section>
-
-      <footer>
-        Aynı ağda doğrudan, farklı ağda internet üzerinden gönderir.
-      </footer>
 
       {pcPickerOpen && (
         <div className="picker-backdrop" role="presentation">
