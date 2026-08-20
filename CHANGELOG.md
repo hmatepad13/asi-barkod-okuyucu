@@ -1,5 +1,13 @@
 # Sürüm Notları
 
+## PWA 2026.08.20.5 - 20 Ağustos 2026
+
+- Yarı ölçekli kurtarma da başarısız olursa çalışan, kamera çözünürlüğüne göre
+  orantılanmış `2,2 / 310` blur kurtarması eklendi.
+- Gerçek bozuk baskı fotoğrafında küçültmeden yapılan testte yalnız yaklaşık
+  2,0–2,5 px aralığı doğru çözdüğü için blur normal ve yarı ölçekli okumadan
+  sonra çalışır.
+
 ## PWA 2026.08.20.4 - 20 Ağustos 2026
 
 - Fabrika baskısında ince dikey beyaz boşluklar bulunan DataMatrix kodları için

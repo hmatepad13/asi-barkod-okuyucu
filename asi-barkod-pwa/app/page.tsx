@@ -94,6 +94,7 @@ function captureRegion(
   target: HTMLElement,
   enhanced: boolean,
   sourceScale?: number,
+  blurRatio = 0,
 ) {
   const videoRect = video.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
@@ -123,6 +124,9 @@ function captureRegion(
   if (!context) throw new Error("Görüntü işleme alanı açılamadı.");
   context.imageSmoothingEnabled = false;
   if (enhanced) context.filter = "grayscale(1) contrast(1.35)";
+  else if (blurRatio > 0) {
+    context.filter = `blur(${Math.max(1, canvas.width * blurRatio)}px)`;
+  }
   context.drawImage(
     video,
     region.x,
@@ -648,6 +652,34 @@ export default function Home() {
           halfScaleResults,
           halfScaleImage.width,
           halfScaleImage.height,
+        );
+      }
+      if (!found) {
+        // Yarı ölçek de yetmezse, gerçek bozuk baskı örneğinde doğrulanan
+        // 2,2 / 310 oranında bulanıklaştırma ince beyaz baskı boşluklarını
+        // modül sınırlarını tamamen silmeden komşu siyahlarla birleştirir.
+        setStatus("Baskı boşlukları yumuşatılarak yeniden deneniyor");
+        const blurredImage = captureRegion(
+          video,
+          scanTarget,
+          false,
+          undefined,
+          2.2 / 310,
+        );
+        const blurredResults = await readBarcodes(blurredImage, {
+          formats: ["DataMatrix"],
+          maxNumberOfSymbols: 4,
+          tryHarder: true,
+          tryRotate: true,
+          tryInvert: true,
+          tryDownscale: true,
+          tryDenoise: true,
+          textMode: "Plain",
+        });
+        found = selectCenteredBarcode(
+          blurredResults,
+          blurredImage.width,
+          blurredImage.height,
         );
       }
       if (!found) {
