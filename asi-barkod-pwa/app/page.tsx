@@ -709,27 +709,27 @@ export default function Home() {
     setLastRead("");
     setLastRaw("");
     setCameraError("");
-    setStatus("Fotoğraftaki QR kod aranıyor");
+    setStatus("Fotoğraftaki barkod aranıyor");
 
     try {
       const imageData = await imageDataFromFile(file);
-      const found = await decodeFirstBarcode(imageData, ["QRCode"]);
+      const found = await decodeFirstBarcode(imageData, ["DataMatrix", "QRCode"]);
       if (!found) {
-        throw new Error("QR kod bulunamadı. WhatsApp ekran görüntüsünde kodun tamamı görünmelidir.");
+        throw new Error("DataMatrix veya QR kod bulunamadı. Fotoğrafta kodun tamamı görünmelidir.");
       }
 
       const raw = bytesToRaw(found);
       const vaccineName = vaccineNameForBarcode(raw);
       setStatus(`${selectedReceiver.name} bilgisayarına gönderiliyor`);
-      await sendToPc(raw, "QR_CODE");
-      setLastRead(vaccineName || "QR kod okundu");
+      await sendToPc(raw, scanFormatFor(found));
+      setLastRead(vaccineName || (found.format === "DataMatrix" ? "DataMatrix okundu" : "QR kod okundu"));
       setLastRaw(printableBarcode(raw));
       setStatus(`Başarılı — ${selectedReceiver.name} bilgisayarına Ably üzerinden yazıldı`);
       navigator.vibrate?.(80);
       beep();
     } catch (error) {
       const reason = error instanceof Error ? error.message : String(error);
-      setStatus("Fotoğraftaki QR kod okunamadı");
+      setStatus("Fotoğraftaki barkod okunamadı");
       setCameraError(reason);
     } finally {
       setScanning(false);
@@ -825,7 +825,7 @@ export default function Home() {
             <path d="m5.5 18 4.1-4.2 2.8 2.6 2.3-2.3 3.3 3.1" />
             <path d="M16 6h2v2h-2zM16 10h1v1h-1zM18 11h1v2h-1zM15 13h2v1h-2z" />
           </svg>
-          <span>GALERİDEN QR</span>
+          <span>GALERİDEN BARKOD</span>
         </button>
         <div className="controls" aria-label="Kamera kontrolleri">
           <div className="secondary-controls">
