@@ -1,5 +1,13 @@
 # Sürüm Notları
 
+## PWA 2026.08.30.1 - 30 Ağustos 2026
+
+- Galeriden seçilen fotoğraflarda QR Kodun yanında GS1 DataMatrix de okunur;
+  bulunan DataMatrix PC'ye doğru `DATA_MATRIX` biçiminde gönderilir.
+- PWA sürüm değeri, service-worker önbellek adına otomatik bağlandı. Yeni
+  sürüm algılandığında açık telefon uygulaması tarama yapılmıyorsa kendini
+  yeniler; aktif tarama bitene kadar yenilemeyi bekletir.
+
 ## PWA 2026.08.20.6 - 20 Ağustos 2026
 
 - ZXing-WASM 3.1.3, Next.js 16.3.1, React 19.2.8 ve Ably 2.27.0 sürümlerine

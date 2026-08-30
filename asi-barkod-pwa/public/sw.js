@@ -1,4 +1,8 @@
-const CACHE_NAME = "asi-barkod-pwa-v15";
+// page.tsx service worker'ı /sw.js?release=<PWA_RELEASE> olarak kaydeder.
+// Böylece yeni PWA sürümünde eski önbellek otomatik terk edilir; ikinci bir
+// sürüm numarasını elle değiştirmek gerekmez.
+const release = new URL(self.location.href).searchParams.get("release") || "legacy";
+const CACHE_NAME = `asi-barkod-pwa-${release}`;
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
