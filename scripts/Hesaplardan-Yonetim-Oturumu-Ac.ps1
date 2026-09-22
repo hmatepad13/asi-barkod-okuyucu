@@ -32,10 +32,20 @@ function Read-EnvFile {
 }
 
 $envValues = Read-EnvFile -Path $secretsPath
-foreach ($name in @("GITHUB_TOKEN", "VERCEL_TOKEN", "VERCEL_REFRESH_TOKEN", "VERCEL_TOKEN_EXPIRES_AT")) {
+foreach ($name in @("GITHUB_TOKEN", "VERCEL_PROJECT_ID")) {
     if ([string]::IsNullOrWhiteSpace($envValues[$name])) {
         throw "$name HESAPLAR.env içinde yok veya boş."
     }
+}
+
+# Projeye sınırlı Vercel tokenı tercih edilir. Eski kayıtlarla uyumluluk için
+# VERCEL_TOKEN ikinci seçenektir; refresh tokenına ihtiyaç yoktur.
+$vercelToken = $envValues["VERCEL_TOKEN_CURRENT"]
+if ([string]::IsNullOrWhiteSpace($vercelToken)) {
+    $vercelToken = $envValues["VERCEL_TOKEN"]
+}
+if ([string]::IsNullOrWhiteSpace($vercelToken)) {
+    throw "VERCEL_TOKEN_CURRENT veya VERCEL_TOKEN HESAPLAR.env içinde yok veya boş."
 }
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
@@ -45,17 +55,7 @@ if (-not (Get-Command vercel -ErrorAction SilentlyContinue)) {
     throw "Vercel CLI kurulu değil. PowerShell'de: npm install --global vercel"
 }
 
-# Vercel kısa ömürlü erişim tokenını yenileme anahtarıyla kendi yapılandırmasında
-# günceller. Bu nedenle yalnız VERCEL_TOKEN çevre değişkeni kullanmak yeterli değildir.
-$vercelDataDir = Join-Path $env:APPDATA "com.vercel.cli\Data"
-New-Item -ItemType Directory -Force -Path $vercelDataDir | Out-Null
-$vercelAuthPath = Join-Path $vercelDataDir "auth.json"
-$vercelAuth = [ordered]@{
-    token = $envValues["VERCEL_TOKEN"]
-    expiresAt = $envValues["VERCEL_TOKEN_EXPIRES_AT"]
-    refreshToken = $envValues["VERCEL_REFRESH_TOKEN"]
-} | ConvertTo-Json
-[System.IO.File]::WriteAllText($vercelAuthPath, $vercelAuth, [System.Text.UTF8Encoding]::new($false))
+$env:VERCEL_TOKEN = $vercelToken
 
 # GitHub CLI oturumunu tokenla kurar; Git için de gh credential yardımcısını ayarlar.
 $envValues["GITHUB_TOKEN"] | gh auth login --hostname github.com --with-token | Out-Null
@@ -72,12 +72,14 @@ $githubUser = gh api user --jq .login
 if ($LASTEXITCODE -ne 0) {
     throw "GitHub erişimi doğrulanamadı."
 }
-$vercelUser = vercel whoami
-if ($LASTEXITCODE -ne 0) {
-    throw "Vercel erişimi doğrulanamadı."
+$vercelProject = Invoke-RestMethod `
+    -Uri "https://api.vercel.com/v9/projects/$($envValues['VERCEL_PROJECT_ID'])" `
+    -Headers @{ Authorization = "Bearer $vercelToken" }
+if ([string]::IsNullOrWhiteSpace($vercelProject.name)) {
+    throw "Vercel proje erişimi doğrulanamadı."
 }
 
 Write-Host "GitHub access is ready: $githubUser"
-Write-Host "Vercel access is ready: $vercelUser"
+Write-Host "Vercel project access is ready: $($vercelProject.name)"
 Write-Host "Ably key and live PWA configuration are in HESAPLAR.env."
 Write-Host "No token value was printed."

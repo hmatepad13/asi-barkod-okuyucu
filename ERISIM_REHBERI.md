@@ -21,9 +21,9 @@ değişkenleri, Vercel projesi ve GitHub reposu yönetilebilir.
 ## Kritik alanlar
 
 - \`GITHUB_TOKEN\`: repo üzerinde yazma/silme/düzenleme için.
-- \`VERCEL_TOKEN\` ve \`VERCEL_REFRESH_TOKEN\`: proje, ortam değişkeni ve
-  dağıtım yönetimi için. Vercel kısa ömürlü tokenı gerektiğinde bu yenileme
-  anahtarıyla değiştirir.
+- \`VERCEL_TOKEN_CURRENT\`: Aşı Barkod PWA projesine sınırlı dağıtım ve
+  yönetim tokenı. Betik bunu tercih eder; eski \`VERCEL_TOKEN\` yalnız geriye
+  uyumluluk içindir. Refresh tokenı kullanılmaz.
 - \`ABLY_API_KEY\`: PWA'nın telefon-PC iletişimi için Vercel'de kullandığı anahtar.
 - \`PWA_URL\`, \`VERCEL_PROJECT_ID\`, \`ABLY_ACCOUNT_CODE\`: ilgili panellere ve
   doğru projeye dönmek için sabit kimlikler.
