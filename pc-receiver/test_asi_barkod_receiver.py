@@ -56,12 +56,12 @@ class UpdateTests(unittest.TestCase):
 
     def test_latest_release_finds_windows_installer(self) -> None:
         payload = {
-            "tag_name": "v0.5.1",
-            "html_url": "https://github.com/example/releases/tag/v0.5.1",
+            "tag_name": "v0.5.2",
+            "html_url": "https://github.com/example/releases/tag/v0.5.2",
             "body": "## Windows\n- Güncelleme notları eklendi.",
             "assets": [
                 {
-                    "name": "Asi-Barkod-Windows-Kurulum-v0.5.1.exe",
+                    "name": "Asi-Barkod-Windows-Kurulum-v0.5.2.exe",
                     "browser_download_url": "https://example.test/installer.exe",
                 }
             ],
@@ -75,11 +75,35 @@ class UpdateTests(unittest.TestCase):
             info = receiver.fetch_latest_release()
 
         self.assertTrue(info.is_newer)
-        self.assertEqual(info.version, "0.5.1")
-        self.assertEqual(info.filename, "Asi-Barkod-Windows-Kurulum-v0.5.1.exe")
+        self.assertEqual(info.version, "0.5.2")
+        self.assertEqual(info.filename, "Asi-Barkod-Windows-Kurulum-v0.5.2.exe")
         self.assertEqual(info.download_url, "https://example.test/installer.exe")
         self.assertEqual(info.notes, "Windows\n- Güncelleme notları eklendi.")
         self.assertIs(urlopen.call_args.kwargs["context"], tls_context)
+
+    def test_latest_release_prefers_matching_architecture(self) -> None:
+        payload = {
+            "tag_name": "v0.5.1",
+            "assets": [
+                {
+                    "name": "Asi-Barkod-Windows-Kurulum-v0.5.1-x86.exe",
+                    "browser_download_url": "https://example.test/x86.exe",
+                },
+                {
+                    "name": "Asi-Barkod-Windows-Kurulum-v0.5.1-x64.exe",
+                    "browser_download_url": "https://example.test/x64.exe",
+                },
+            ],
+        }
+        with mock.patch.object(receiver, "installer_architecture", return_value="x86"), mock.patch.object(
+            receiver.urllib.request,
+            "urlopen",
+            return_value=io.BytesIO(json.dumps(payload).encode("utf-8")),
+        ):
+            info = receiver.fetch_latest_release()
+
+        self.assertEqual(info.filename, "Asi-Barkod-Windows-Kurulum-v0.5.1-x86.exe")
+        self.assertEqual(info.download_url, "https://example.test/x86.exe")
 
     def test_pwa_release_requires_a_release_value(self) -> None:
         tls_context = object()

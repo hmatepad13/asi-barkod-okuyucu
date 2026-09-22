@@ -1,5 +1,15 @@
 # Sürüm Notları
 
+## PWA 2026.09.22.2 / PC v0.5.1 - 22 Eylül 2026
+
+- Service worker, Ably yetkisi ve sürüm kontrolü gibi `/api/` yanıtlarını artık
+  önbelleğe almaz. Böylece süreli Ably yetkisi eski haliyle tekrar kullanılmaz.
+- Galeriden/WhatsApp'tan seçilen görsellerde de dikey beyaz baskı çizgisi
+  onarımı, normal çözümleme başarısız olduğunda 3/5/7 piksel sırayla denenir.
+- Windows için ayrı x64 ve x86 kurulum paketleri hazırlandı.
+- Windows alıcısı artık çalıştırılabilir dosyasının kendi yükseltme manifestiyle
+  açılır; yönetici çalışan hedef uygulamalara yazmak için sağ tık gerekmez.
+
 ## PWA 2026.09.22.1 - 22 Eylül 2026
 
 - Temiz barkodların normal, hızlı okuma yolu değiştirilmedi.

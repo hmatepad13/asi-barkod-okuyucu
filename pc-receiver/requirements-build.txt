@@ -1,4 +1,4 @@
-# Windows 8.1 64-bit için Python 3.12 ile kullanılan sabit derleme araçları.
+# Windows 8.1 için x64 Python 3.12 ve x86 Python 3.9 ile kullanılan sabit derleme araçları.
 PyInstaller==6.11.1
 qrcode==7.4.2
 Pillow==10.4.0

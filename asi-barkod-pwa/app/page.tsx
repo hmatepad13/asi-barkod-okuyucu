@@ -50,6 +50,7 @@ const CHANNEL_PREFIX = `asi-barkod:${WORKSPACE_ID}`;
 const DISCOVERY_WAIT_MS = 2800;
 const PWA_UPDATE_MIN_INTERVAL_MS = 30 * 60 * 1000;
 const PWA_SHORT_VERSION = `v${PWA_RELEASE.split(".").slice(-2).join(".")}`;
+const VERTICAL_GAP_REPAIR_WIDTHS = [3, 5, 7];
 
 type ScanFormat = "DATA_MATRIX" | "QR_CODE";
 
@@ -64,6 +65,30 @@ function bytesToRaw(result: ReadResult) {
 
 function scanFormatFor(result: ReadResult): ScanFormat {
   return result.format === "DataMatrix" ? "DATA_MATRIX" : "QR_CODE";
+}
+
+async function decodePhotoBarcode(imageData: ImageData) {
+  let found = await decodeFirstBarcode(imageData, ["DataMatrix", "QRCode"]);
+  if (found) return found;
+
+  // Kameradaki baskı kusuru kurtarmasını galeriden/WhatsApp'tan seçilen
+  // görsellere de uygula. Normal fotoğraf ilk denemede biter; bu yol yalnız
+  // DataMatrix ilk kez çözülemediğinde çalışır.
+  for (const kernelWidth of VERTICAL_GAP_REPAIR_WIDTHS) {
+    const repaired = new ImageData(
+      repairVerticalPrintGaps(
+        imageData.data,
+        imageData.width,
+        imageData.height,
+        kernelWidth,
+      ),
+      imageData.width,
+      imageData.height,
+    );
+    found = await decodeFirstBarcode(repaired, ["DataMatrix"]);
+    if (found) return found;
+  }
+  return undefined;
 }
 
 function beep() {
@@ -669,8 +694,7 @@ export default function Home() {
       }
 
       if (!found) {
-        const repairWidths = [3, 5, 7];
-        for (const kernelWidth of repairWidths) {
+        for (const kernelWidth of VERTICAL_GAP_REPAIR_WIDTHS) {
           setStatus(`Dikey baskı çizgileri onarılıyor (${kernelWidth} piksel)`);
           const repairedImage = new ImageData(
             repairVerticalPrintGaps(
@@ -734,7 +758,7 @@ export default function Home() {
 
     try {
       const imageData = await imageDataFromFile(file);
-      const found = await decodeFirstBarcode(imageData, ["DataMatrix", "QRCode"]);
+      const found = await decodePhotoBarcode(imageData);
       if (!found) {
         throw new Error("DataMatrix veya QR kod bulunamadı. Fotoğrafta kodun tamamı görünmelidir.");
       }

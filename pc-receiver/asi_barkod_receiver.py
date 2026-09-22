@@ -73,7 +73,7 @@ except ModuleNotFoundError:
     TK_AVAILABLE = False
 
 
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.5.1"
 PWA_NAME = "Aşı Barkod PWA"
 PWA_URL = "https://asi-barkod-pwa.vercel.app/"
 PWA_RELEASE_URL = f"{PWA_URL.rstrip('/')}/api/release"
@@ -142,6 +142,11 @@ def format_file_size(size: int) -> str:
     return f"{size / (1024 * 1024):.1f} MB"
 
 
+def installer_architecture() -> str:
+    """Select the release asset matching the currently running receiver."""
+    return "x64" if ctypes.sizeof(ctypes.c_void_p) == 8 else "x86"
+
+
 def fetch_latest_release() -> UpdateInfo:
     request = urllib.request.Request(
         LATEST_RELEASE_API,
@@ -159,13 +164,26 @@ def fetch_latest_release() -> UpdateInfo:
 
     download_url = ""
     filename = ""
-    for asset in payload.get("assets") or []:
+    assets = payload.get("assets") or []
+    expected_suffix = f"-{installer_architecture()}.exe"
+    for asset in assets:
         name = str(asset.get("name") or "")
         url = str(asset.get("browser_download_url") or "")
-        if name.lower().endswith(".exe") and "windows-kurulum" in name.lower() and url:
+        if name.lower().endswith(expected_suffix) and "windows-kurulum" in name.lower() and url:
             filename = os.path.basename(name)
             download_url = url
             break
+
+    # Eski GitHub sürümlerinde mimari eki yoktu. Böyle bir sürüm okunurken
+    # güncelleme ekranı tamamen boş kalmasın.
+    if not download_url:
+        for asset in assets:
+            name = str(asset.get("name") or "")
+            url = str(asset.get("browser_download_url") or "")
+            if name.lower().endswith(".exe") and "windows-kurulum" in name.lower() and url:
+                filename = os.path.basename(name)
+                download_url = url
+                break
 
     return UpdateInfo(
         version=tag.lstrip("vV"),

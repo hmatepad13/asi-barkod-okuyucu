@@ -1,18 +1,30 @@
 #define AppName "Asi Barkod PC Alicisi"
-#define AppVersion "0.5.0"
+#define AppVersion "0.5.1"
 #define AppExeName "AsiBarkodReceiver.exe"
+
+#ifdef X86_BUILD
+  #define BuildArch "x86"
+  #define OutputName "Asi-Barkod-Windows-Kurulum-v" + AppVersion + "-x86"
+  #define InstallDir "{autopf}\\Asi Barkod"
+  #define AllowedArchitectures "x86compatible"
+#else
+  #define BuildArch "x64"
+  #define OutputName "Asi-Barkod-Windows-Kurulum-v" + AppVersion + "-x64"
+  #define InstallDir "{autopf64}\\Asi Barkod"
+  #define AllowedArchitectures "x64compatible"
+#endif
 
 [Setup]
 AppId={{9DA94099-5E5D-499B-9A52-CF587A501806}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher=Asi Barkod
-DefaultDirName={autopf64}\Asi Barkod
+DefaultDirName={#InstallDir}
 UsePreviousAppDir=no
 DefaultGroupName=Asi Barkod
 DisableProgramGroupPage=yes
 OutputDir=..\..\dist
-OutputBaseFilename=Asi-Barkod-Windows-Kurulum-v{#AppVersion}
+OutputBaseFilename={#OutputName}
 SetupIconFile=..\..\pc-receiver\assets\asi_barkod_icon.ico
 UninstallDisplayIcon={app}\{#AppExeName}
 Compression=lzma2/max
@@ -20,7 +32,10 @@ SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
 MinVersion=6.2
-ArchitecturesAllowed=x64compatible
+ArchitecturesAllowed={#AllowedArchitectures}
+#ifndef X86_BUILD
+ArchitecturesInstallIn64BitMode=x64compatible
+#endif
 CloseApplications=yes
 RestartApplications=no
 
@@ -32,7 +47,7 @@ Name: "desktopicon"; Description: "Masaustune kisayol ekle"; GroupDescription: "
 Name: "startup"; Description: "Windows acilinca otomatik baslat"; GroupDescription: "Baslatma:"
 
 [Files]
-Source: "..\..\dist\AsiBarkodReceiver\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\dist\{#BuildArch}\AsiBarkodReceiver\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\Asi Barkod PC Alicisi"; Filename: "{app}\{#AppExeName}"
@@ -66,8 +81,13 @@ begin
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/IM AsiBarkodReceiver.exe /F', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/IM AsiBarkodIphoneBridge.exe /F', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
-  { v0.4.0 ve öncesi paketin x86 Program Files yolunu bırakmadan temizle. }
+  { Mimari değiştirildiyse eski kurulum klasörünü bırakmadan temizle. }
+#ifdef X86_BUILD
+  if IsWin64 then
+    DelTree(ExpandConstant('{autopf64}\Asi Barkod'), True, True, True);
+#else
   DelTree(ExpandConstant('{autopf32}\Asi Barkod'), True, True, True);
+#endif
 
   DeleteFile(ExpandConstant('{userstartup}\Asi Barkod Receiver.cmd'));
   LegacyDir := ExpandConstant('{localappdata}\Programs\AsiBarkod');

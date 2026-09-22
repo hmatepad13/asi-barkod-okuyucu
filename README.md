@@ -6,7 +6,7 @@ bilgisayardaki aktif alana klavye gibi yazan kişisel kullanım sistemidir.
 ## Yapı
 
 - `asi-barkod-pwa`: iPhone ve Android için tek PWA.
-- `pc-receiver`: Windows 8.1/10/11 64-bit PC alıcısı.
+- `pc-receiver`: Windows 8.1/10/11 için x64 ve x86 PC alıcısı.
 - `packaging/windows`: Windows kurulum paketi tanımı.
 - `scripts`: paket üretimi ve yalnız eski kurulum kalıntılarını temizleme araçları.
 
@@ -31,9 +31,12 @@ Yeşil durum erişilebilir/bağlı, kırmızı durum bağlantı hatası demektir
 
 ## Temiz Windows kurulumu
 
-1. GitHub Releases içinden en güncel `Asi-Barkod-Windows-Kurulum-v*.exe` dosyasını indirin.
+1. GitHub Releases içinden PC mimarisine uygun en güncel paketi indirin:
+   `-x64.exe` 64-bit Windows, `-x86.exe` 32-bit Windows içindir.
 2. Kuruluma yönetici izni verin; uygulama `C:\Program Files\Asi Barkod` içine kurulur.
-3. Kurulum tamamlanınca alıcı açılır. İsterseniz masaüstü kısayolu ve Windows ile otomatik başlama seçeneğini işaretleyin.
+3. Kurulum tamamlanınca alıcı yönetici yetkisiyle açılır. Masaüstü/Başlat kısayolu
+   da uygulamayı aynı yetki isteğiyle başlatır; sağ tıkla “Yönetici olarak
+   çalıştır” gerekmez.
 
 PC'deki **Güncellemeleri denetle** düğmesi yeni paketi indirir; indirme yüzdesi ve MB bilgisi ekranda görünür.
 
@@ -52,7 +55,7 @@ npx vercel --prod --yes
 Windows paketi:
 
 ```powershell
-.\scripts\build-windows-package.ps1
+.\scripts\build-windows-package.ps1 -Architecture both
 ```
 
 Yeni sürümde `pc-receiver/asi_barkod_receiver.py`, `packaging/windows/AsiBarkod.iss`,

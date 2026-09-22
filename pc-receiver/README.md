@@ -4,9 +4,9 @@ Windows tarafinda calisir. Telefon PWA'dan Ably ile gelen barkod verisini aktif 
 
 ## Calistirma
 
-Normal kullanimda `Asi-Barkod-Windows-Kurulum-v0.2.6.exe` dosyasini calistirmak yeterlidir. Kurulum paketinin icinde Python ve gereken kutuphaneler bulunur; hedef PC'ye ayri bir uygulama kurulmaz.
+Normal kullanimda GitHub Releases'teki guncel `Asi-Barkod-Windows-Kurulum-v*.exe` dosyasini calistirmak yeterlidir. Kurulum paketinin icinde Python ve gereken kutuphaneler bulunur; hedef PC'ye ayri bir uygulama kurulmaz.
 
-Paket 32 bittir ve hem 32 bit hem 64 bit Windows 8/10/11 icin hazirlanmistir. Kurulum aliciyi Windows acilisina ekler; yerel ag portu veya ek guvenlik duvari kurali acmaz.
+`-x64.exe` paketi 64-bit, `-x86.exe` paketi 32-bit Windows 8.1/10/11 icindir. Kurulum ve uygulamanin kendisi yonetici yetkisi ister; boylece yonetici calisan hastane uygulamalarinin aktif alanina da yazabilir. Kurulum aliciyi Windows acilisina ekler; yerel ag portu veya ek guvenlik duvari kurali acmaz.
 
 Kaynak koddan gelistirme amacli elle calistirma:
 
