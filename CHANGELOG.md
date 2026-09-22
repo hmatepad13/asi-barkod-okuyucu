@@ -1,5 +1,13 @@
 # Sürüm Notları
 
+## PWA 2026.09.22.1 - 22 Eylül 2026
+
+- Temiz barkodların normal, hızlı okuma yolu değiştirilmedi.
+- Normal, yarı ölçek, blur ve en net kare denemeleri başarısız olursa; ince
+  dikey beyaz baskı çizgilerini yatay yönde kapatan son aşama eklendi.
+- Onarım sırasıyla 3, 5 ve 7 piksellik hafif yatay seviyelerde denenir. Geçerli
+  bir DataMatrix kodu ZXing tarafından çözümlenmedikçe veri gönderilmez.
+
 ## PWA 2026.08.30.1 - 30 Ağustos 2026
 
 - Galeriden seçilen fotoğraflarda QR Kodun yanında GS1 DataMatrix de okunur;

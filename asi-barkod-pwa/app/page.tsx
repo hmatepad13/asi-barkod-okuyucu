@@ -21,6 +21,7 @@ import {
 import {
   edgeSharpnessScore,
   normalizeBlueChannel,
+  repairVerticalPrintGaps,
 } from "./imageVariants";
 import { vaccineNameForBarcode } from "./vaccineCatalog";
 import { PWA_RELEASE } from "./release";
@@ -617,6 +618,7 @@ export default function Home() {
         window.requestAnimationFrame(() => resolve()),
       );
       const imageData = captureRegion(video, scanTarget);
+      let rescueFrame = imageData;
       let found: ReadResult | undefined = await decodeCenteredBarcode(
         imageData,
         ["DataMatrix", "QRCode"],
@@ -649,7 +651,7 @@ export default function Home() {
           await wait(80);
           rescueFrames.push(captureRegion(video, scanTarget));
         }
-        const rescueFrame = rescueFrames.reduce((sharpest, candidate) =>
+        rescueFrame = rescueFrames.reduce((sharpest, candidate) =>
           edgeSharpnessScore(candidate.data, candidate.width, candidate.height) >
           edgeSharpnessScore(sharpest.data, sharpest.width, sharpest.height)
             ? candidate
@@ -664,6 +666,25 @@ export default function Home() {
           rescueImage,
           ["DataMatrix", "QRCode"],
         );
+      }
+
+      if (!found) {
+        const repairWidths = [3, 5, 7];
+        for (const kernelWidth of repairWidths) {
+          setStatus(`Dikey baskı çizgileri onarılıyor (${kernelWidth} piksel)`);
+          const repairedImage = new ImageData(
+            repairVerticalPrintGaps(
+              rescueFrame.data,
+              rescueFrame.width,
+              rescueFrame.height,
+              kernelWidth,
+            ),
+            rescueFrame.width,
+            rescueFrame.height,
+          );
+          found = await decodeCenteredBarcode(repairedImage, ["DataMatrix"]);
+          if (found) break;
+        }
       }
 
       if (!found) {

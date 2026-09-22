@@ -45,6 +45,103 @@ export function normalizeBlueChannel(
   return output;
 }
 
+/**
+ * İnce dikey yazıcı boşluklarını kapatmak için yalnız yatay eksende
+ * morfolojik kapatma uygular. Önce koyu pikselleri yatayda genişletir,
+ * sonra aynı miktarda geri toplar. Böylece kısa beyaz dikey kopukluklar
+ * kapanır; üst-alt yönde yayılma olmaz.
+ */
+export function repairVerticalPrintGaps(
+  rgba: Uint8ClampedArray<ArrayBufferLike>,
+  width: number,
+  height: number,
+  kernelWidth: number,
+): Uint8ClampedArray<ArrayBuffer> {
+  if (width < 1 || height < 1 || rgba.length < width * height * 4) {
+    throw new Error("Geçersiz barkod görüntüsü.");
+  }
+  if (kernelWidth < 3 || kernelWidth % 2 === 0) {
+    throw new Error("Onarım genişliği 3 veya daha büyük tek sayı olmalı.");
+  }
+
+  const histogram = new Uint32Array(256);
+  const pixelCount = width * height;
+  const luminance = new Uint8Array(pixelCount);
+  for (let index = 0; index < pixelCount; index += 1) {
+    const offset = index * 4;
+    const value =
+      (rgba[offset] * 77 + rgba[offset + 1] * 150 + rgba[offset + 2] * 29) >>
+      8;
+    luminance[index] = value;
+    histogram[value] += 1;
+  }
+
+  let total = 0;
+  for (let value = 0; value < 256; value += 1) total += value * histogram[value];
+  let backgroundWeight = 0;
+  let backgroundTotal = 0;
+  let bestScore = -1;
+  let threshold = 127;
+  for (let value = 0; value < 256; value += 1) {
+    backgroundWeight += histogram[value];
+    if (!backgroundWeight) continue;
+    const foregroundWeight = pixelCount - backgroundWeight;
+    if (!foregroundWeight) break;
+    backgroundTotal += value * histogram[value];
+    const backgroundMean = backgroundTotal / backgroundWeight;
+    const foregroundMean = (total - backgroundTotal) / foregroundWeight;
+    const score =
+      backgroundWeight * foregroundWeight *
+      (backgroundMean - foregroundMean) * (backgroundMean - foregroundMean);
+    if (score > bestScore) {
+      bestScore = score;
+      threshold = value;
+    }
+  }
+
+  const ink = new Uint8Array(pixelCount);
+  for (let index = 0; index < pixelCount; index += 1) {
+    ink[index] = luminance[index] <= threshold ? 1 : 0;
+  }
+
+  const radius = Math.floor(kernelWidth / 2);
+  const dilated = new Uint8Array(pixelCount);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const start = Math.max(0, x - radius);
+      const end = Math.min(width - 1, x + radius);
+      for (let sourceX = start; sourceX <= end; sourceX += 1) {
+        if (ink[y * width + sourceX]) {
+          dilated[y * width + x] = 1;
+          break;
+        }
+      }
+    }
+  }
+
+  const output = new Uint8ClampedArray(new ArrayBuffer(rgba.length));
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const start = Math.max(0, x - radius);
+      const end = Math.min(width - 1, x + radius);
+      let closed = 1;
+      for (let sourceX = start; sourceX <= end; sourceX += 1) {
+        if (!dilated[y * width + sourceX]) {
+          closed = 0;
+          break;
+        }
+      }
+      const offset = (y * width + x) * 4;
+      const value = closed ? 0 : 255;
+      output[offset] = value;
+      output[offset + 1] = value;
+      output[offset + 2] = value;
+      output[offset + 3] = 255;
+    }
+  }
+  return output;
+}
+
 export function edgeSharpnessScore(
   rgba: Uint8ClampedArray<ArrayBufferLike>,
   width: number,

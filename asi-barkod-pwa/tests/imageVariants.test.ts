@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   edgeSharpnessScore,
   normalizeBlueChannel,
+  repairVerticalPrintGaps,
 } from "../app/imageVariants.ts";
 
 test("mavi kalemi siyah DataMatrix hücresinden ayırır", () => {
@@ -48,4 +49,41 @@ test("keskin kenarlı kareyi düz görüntüden daha yüksek puanlar", () => {
     edgeSharpnessScore(sharp, 8, 8) >
       edgeSharpnessScore(flat, 8, 8),
   );
+});
+
+test("yatay kapatma ince dikey beyaz baskı boşluğunu köprüler", () => {
+  const width = 7;
+  const height = 3;
+  const pixels = new Uint8ClampedArray(width * height * 4).fill(255);
+  for (let y = 0; y < height; y += 1) {
+    for (const x of [0, 1, 2, 4, 5, 6]) {
+      const offset = (y * width + x) * 4;
+      pixels[offset] = 0;
+      pixels[offset + 1] = 0;
+      pixels[offset + 2] = 0;
+      pixels[offset + 3] = 255;
+    }
+  }
+
+  const repaired = repairVerticalPrintGaps(pixels, width, height, 3);
+
+  for (let y = 0; y < height; y += 1) {
+    assert.equal(repaired[(y * width + 3) * 4], 0);
+  }
+});
+
+test("yatay kapatma geniş beyaz modülü kapatmaz", () => {
+  const width = 9;
+  const pixels = new Uint8ClampedArray(width * 4).fill(255);
+  for (const x of [0, 1, 2, 6, 7, 8]) {
+    const offset = x * 4;
+    pixels[offset] = 0;
+    pixels[offset + 1] = 0;
+    pixels[offset + 2] = 0;
+    pixels[offset + 3] = 255;
+  }
+
+  const repaired = repairVerticalPrintGaps(pixels, width, 1, 3);
+
+  assert.equal(repaired[4 * 4], 255);
 });
