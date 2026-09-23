@@ -1,5 +1,16 @@
 # Sürüm Notları
 
+## PC v0.5.2 - 23 Eylül 2026
+
+- Windows otomatik başlatma artık Başlangıç klasöründeki normal kısayol yerine,
+  oturum açıldığında `--tray` ile çalışan ve en yüksek yetki düzeyini kullanan
+  Zamanlanmış Görev ile yapılır. Yönetici manifesti nedeniyle oluşan sessiz
+  başlatmama sorunu giderildi.
+- Kurulum bittiğinde uygulamayı açma adımı ShellExecute üzerinden yürütülür;
+  önceki paketteki `CreateProcess ... kod 740` hatası giderildi.
+- x64 kurulum, önceki x86 sürümünün Denetim Masası kaydını ve eski kaldırıcı
+  kalıntılarını temizler.
+
 ## PWA 2026.09.22.2 / PC v0.5.1 - 22 Eylül 2026
 
 - Service worker, Ably yetkisi ve sürüm kontrolü gibi `/api/` yanıtlarını artık

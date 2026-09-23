@@ -73,7 +73,7 @@ except ModuleNotFoundError:
     TK_AVAILABLE = False
 
 
-APP_VERSION = "0.5.1"
+APP_VERSION = "0.5.2"
 PWA_NAME = "Aşı Barkod PWA"
 PWA_URL = "https://asi-barkod-pwa.vercel.app/"
 PWA_RELEASE_URL = f"{PWA_URL.rstrip('/')}/api/release"
