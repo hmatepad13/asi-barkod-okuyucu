@@ -1,5 +1,17 @@
 # Sürüm Notları
 
+## PC v0.5.3 - 23 Eylül 2026
+
+- Otomatik başlatma görevi oluşturulurken `Program Files` içindeki EXE yolunun
+  tırnaklanması düzeltildi. Önceki pakette Windows komutu üçe bölüp görevi
+  oluşturamıyordu.
+- Kurulumdaki masaüstü kısayolu ve otomatik başlatma seçenekleri, önceki
+  kurulumun seçimini devralmadan varsayılan olarak işaretli gelir.
+- Yeni kurulum, kayıtlı eski x86 ve x64 sürümleri kendi Inno kaldırıcılarıyla
+  sessizce kaldırır; kaldırma başarısızsa yarım bir güncelleme yapmadan durur.
+  Kurulumdan kalmış `_internal` dosyaları da temizlenir. `%APPDATA%` altındaki
+  PC kimliği ve ayarlar korunur.
+
 ## PC v0.5.2 - 23 Eylül 2026
 
 - Windows otomatik başlatma artık Başlangıç klasöründeki normal kısayol yerine,
